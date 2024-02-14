@@ -1,6 +1,6 @@
 <br/>
 <p align="center">
-  <h3 align="center">Rust OpenAI Api Wrapper</h3>
+  <h3 align="center">[WIP] Rust OpenAI Api Wrapper</h3>
 
   <p align="center">
     A synchronous rust OpenAi api wrapper
