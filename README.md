@@ -25,6 +25,10 @@
 * [About the Project](#about-the-project)
 * [Acknowledgements](#acknowledgements)
 
+## WIP
+
+This project is currently being built, and in a WIP status. It is currently not ready for use, the documentation is currently incomplete and the source is being reformatted. Please check back later for updates.
+
 ## Getting Started
 
 This is an example of how you may give instructions on setting up your project locally.
