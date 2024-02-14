@@ -1,5 +1,7 @@
-use crate::openai::networking::Networking;
-use crate::openai::types::{Identifiable, MessageList, OpenApiError};
+use crate::networking::Networking;
+use crate::types::chat::MessageList; // TODO FIXME - MessageList needs to be changed to use ApiList
+use crate::types::common::Identifiable;
+use crate::types::error::OpenApiError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

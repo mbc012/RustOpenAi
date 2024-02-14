@@ -1,6 +1,7 @@
 mod client;
+mod macros;
 mod networking;
-mod types;
+pub mod types;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

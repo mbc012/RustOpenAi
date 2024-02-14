@@ -1,9 +1,10 @@
-use crate::openai::networking::Networking;
+use crate::networking::Networking;
+use crate::types::common::{Identifiable, ToolCalls, Tools, Usage};
+use crate::types::error::OpenApiError;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::Hash;
-
-use crate::openai::types::{Identifiable, OpenApiError, ToolCalls, Tools, Usage};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Run {
@@ -78,8 +79,8 @@ impl RunBuilder {
         self.thread_id.clone().to_string()
     }
 
-    pub fn build(&self) -> Result<Run, OpenApiError> {
-        self.networking.create_run(self)
+    pub fn build(&self, networking: &Networking) -> Result<Run, OpenApiError> {
+        networking.create_run(self)
     }
 }
 

@@ -1,10 +1,9 @@
-use crate::openai::macros;
-use crate::openai::networking::Networking;
-use crate::openai::types::{Identifiable, OpenApiError};
+use crate::networking::Networking;
+use crate::types::common::Identifiable;
+use crate::types::error::OpenApiError;
+
 use crate::strip_edges;
-use reqwest::blocking::multipart;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
 use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize, Clone)]

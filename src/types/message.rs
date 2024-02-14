@@ -1,9 +1,10 @@
-use crate::openai::networking::Networking;
-use crate::openai::types::{Identifiable, OpenApiError};
+use crate::networking::Networking;
+use crate::types::common::Identifiable;
+use crate::types::error::OpenApiError;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::ops::Deref;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Message {

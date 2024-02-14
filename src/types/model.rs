@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::openai::types::Identifiable;
+use crate::types::common::Identifiable;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Model {

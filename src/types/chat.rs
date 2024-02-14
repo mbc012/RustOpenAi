@@ -8,10 +8,6 @@ use std::collections::HashMap;
 use std::fmt::Formatter;
 use std::str::FromStr;
 
-use crate::openai::networking::Networking;
-use crate::openai::types::models::Model;
-use crate::openai::types::{Identifiable, MessageRole, OpenApiError, ToolCalls, Usage};
-
 // TODO: Add derives
 
 #[derive(Debug, PartialEq, Clone, Deserialize)]
