@@ -19,6 +19,7 @@
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
   * [Installation](#installation)
+* [Coverage](#coverage)
 * [Usage](#usage)
 * [Contributing](#contributing)
 * [License](#license)
@@ -67,6 +68,37 @@ npm install
 ```JS
 const API_KEY = 'ENTER YOUR API';
 ```
+
+## Coverage
+
+### Stable Endpoints
+| Endpoints | Status | Notes |
+|-----------|-----|-|
+| Audio     |🌑||
+| Chat |🌕||
+| Embeddings |🌑||
+| File-Tuning | 🌑||
+| Files |🌕||
+|Images|🌑||
+|Models|🌕||
+|Moderations|🌕||
+
+
+### Beta Endpoints
+| Endpoints | Status | Notes                 |
+|-----------|----|-----------------------|
+| Assistant |🌕|                       |
+| Threads   |🌕|                       |
+| Messages |🌕|                       |
+| Runs |🌗| Only partial coverage |
+
+
+#### Legend
+| Status | Meaning          |
+|--------|------------------|
+|🌑| No Coverage      |
+|🌗| Partial Coverage |
+|🌕| Full Coverage    |
 
 ## Usage
 
