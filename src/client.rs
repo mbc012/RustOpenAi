@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::env;
 
 use crate::networking::Networking;
@@ -6,6 +7,7 @@ use crate::types::common::{ApiList, DeletionStatus, Identifiable};
 use crate::types::error::OpenApiError;
 use crate::types::message::Message;
 use crate::types::model::Model;
+use crate::types::moderation::Moderation;
 use crate::types::run::Run;
 use crate::types::thread::Thread;
 
@@ -17,6 +19,7 @@ pub struct OpenAI {
 
 impl OpenAI {
     fn obtain_key() -> String {
+        /// Attempts to pull OPEN_API_KEY from env, if not present, prompt for key
         let key = env::var("OPENAI_API_KEY").unwrap_or_else(|_| {
             let mut key_buff = String::new();
             println!("Please enter your OpenAI API key: ");
@@ -48,6 +51,21 @@ impl OpenAI {
 
     pub fn list_models(&self) -> Result<ApiList<Model>, OpenApiError> {
         self.networking.list_models()
+    }
+
+    /* MODERATION */
+    pub fn create_moderation<T: Identifiable>(
+        &self,
+        text: String,
+        model: Option<T>,
+    ) -> Result<Moderation, OpenApiError> {
+        let mut payload = HashMap::new();
+        payload.insert(String::from("input"), text);
+        let model_id: Option<String> = model.map(|m| m.get_identifier());
+        if let Some(v) = model_id {
+            payload.insert(String::from("model"), v)
+        }
+        self.networking.create_moderation(payload)
     }
 
     /* ASSISTANTS */

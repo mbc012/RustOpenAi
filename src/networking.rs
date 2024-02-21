@@ -31,7 +31,7 @@ pub struct Networking {
 }
 
 impl Networking {
-    /* ---- Common Networking ---- */
+    /** ---- Common Networking ---- */
 
     pub fn new(apikey: String, organization_id: Option<String>) -> Self {
         Self {
@@ -98,7 +98,7 @@ impl Networking {
             .and_then(|val| serde_json::from_value::<T>(val).map_err(OpenApiError::from))
     }
 
-    /* ---- Chat Completion ---- */
+    /** ---- Chat Completion ---- */
 
     pub fn create_chat_completion(
         &self,
@@ -112,7 +112,7 @@ impl Networking {
         )
     }
 
-    /* ---- File ---- */
+    /** ---- File ---- */
 
     pub fn upload_file(&self, payload: &FileBuilder) -> Result<File, OpenApiError> {
         let form = multipart::Form::new()
@@ -143,7 +143,7 @@ impl Networking {
         )
     }
 
-    /* ---- Model ---- */
+    /** ---- Model ---- */
 
     pub fn list_models(&self) -> Result<ApiList<Model>, OpenApiError> {
         self.send_and_convert(Method::GET, String::from("models"), None, None)
@@ -153,31 +153,23 @@ impl Networking {
         self.send_and_convert(Method::GET, format!("models/{}", model_id), None, None)
     }
 
-    /* ---- Moderation ---- */
+    /** ---- Moderation ----
+     * No builder for create_moderation, uses client method
+     */
 
-    // pub fn create_moderation(
-    //     &self,
-    //     input: String,
-    //     model: Option<String>,
-    // ) -> Result<Moderation, OpenApiError> {
-    //     let client = Client::new();
-    //     let url = self.construct_url("content/moderation".to_string(), None)?;
-    //     let mut payload: Map<String, Value> = Map::new();
-    //     payload.insert(
-    //         "model".to_string(),
-    //         Value::String(model.unwrap_or("text-moderation-latest".to_string())),
-    //     );
-    //     payload.insert("data".to_string(), Value::String(input));
-    //     let res = client.post(url)
-    //         .headers(self.construct_headers())
-    //         .body(serde_json::to_string(&payload)?)
-    //         .send()?;
-    //     let output: Value = res.json()?;
-    //     let converted: Moderation = serde_json::from_value(output)?;
-    //     Ok(converted)
-    // }
+    pub fn create_moderation(
+        &self,
+        payload: HashMap<String, String>,
+    ) -> Result<Moderation, OpenApiError> {
+        self.send_and_convert(
+            Method::POST,
+            String::from("content/moderation"),
+            Some(serde_json::to_value(payload)?),
+            None,
+        )
+    }
 
-    /* ---- Assistants + Assistant files ---- */
+    /** ---- Assistant + Assistant files ---- */
 
     pub fn create_assistant(&self, payload: &AssistantBuilder) -> Result<Assistant, OpenApiError> {
         self.send_and_convert(
@@ -277,7 +269,7 @@ impl Networking {
         )
     }
 
-    /* ---- Threads ---- */
+    /** ---- Threads ---- */
 
     pub fn create_thread(&self, payload: ThreadBuilder) -> Result<Thread, OpenApiError> {
         self.send_and_convert(
@@ -319,7 +311,7 @@ impl Networking {
         self.send_and_convert(Method::DELETE, format!("threads/{}", thread_id), None, None)
     }
 
-    /* ---- Messages ---- */
+    /** ---- Messages ---- */
 
     pub fn create_message(&self, payload: &MessageBuilder) -> Result<Message, OpenApiError> {
         self.send_and_convert(
@@ -385,7 +377,7 @@ impl Networking {
         )
     }
 
-    /* ---- Runs ---- */
+    /** ---- Runs ---- */
 
     pub fn create_run(&self, payload: &RunBuilder) -> Result<Run, OpenApiError> {
         self.send_and_convert(
