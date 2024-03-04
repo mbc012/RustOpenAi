@@ -50,10 +50,10 @@ impl Identifiable for Run {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct RunBuilder {
     #[serde(skip)]
-    thread_id: String,
+    thread_id: Option<String>,
     assistant_id: String,
     model: Option<String>,
     instructions: Option<String>,
@@ -65,22 +65,36 @@ pub struct RunBuilder {
 impl RunBuilder {
     pub fn new(thread_id: String, assistant_id: String) -> Self {
         Self {
-            thread_id,
+            thread_id: Some(thread_id),
             assistant_id,
-            model: None,
-            instructions: None,
-            additional_instructions: None,
-            tools: Vec::new(), // TODO
-            metadata: HashMap::new(),
+            ..Self::default()
         }
     }
 
-    pub fn get_thread_id(&self) -> String {
-        self.thread_id.clone().to_string()
+    pub fn new_with_thread(assistant_id: String) -> Self {
+        Self {
+            assistant_id,
+            ..Self::default()
+        }
     }
 
-    pub fn build(&self, networking: &Networking) -> Result<Run, OpenApiError> {
-        networking.create_run(self)
+    fn with_model(mut self, model: String) -> Self {
+        self.model = Some(model);
+        self
+    }
+
+    fn with_instructions(mut self, instructions: String) -> Self {
+        self.instructions = Some(instructions);
+        self
+    }
+
+    fn with_additional_instructions(mut self, additional_instructions: String) -> Self {
+        self.additional_instructions = Some(additional_instructions);
+        self
+    }
+
+    fn build(&self, networking: &Networking) -> Result<Run, OpenApiError> {
+        networking.create_run(self, &self.thread_id)
     }
 }
 
@@ -152,4 +166,17 @@ pub struct SubmitToolOutputs {
 #[serde(rename_all = "snake_case")]
 pub enum RequiredActionType {
     SubmitToolOutput,
+}
+
+/** ---- Run Tests ---- */
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_run_builder() {
+        //let run = RunBuilder::new_with_thread("asst_SJVM5rueqSA5KWXbOsvR2EO5".into());
+        todo!()
+    }
 }

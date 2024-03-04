@@ -1,4 +1,4 @@
-use std::fmt::Formatter;
+use std::fmt::{write, Formatter};
 
 #[derive(Debug)]
 pub enum OpenApiError {
@@ -7,12 +7,25 @@ pub enum OpenApiError {
     StdParseError(std::string::ParseError), // Might be able to remove this, added by mistake (std != url)
     UrlParseError(url::ParseError),
     SerdeJsonError(serde_json::Error),
+    // Library Errors
     NotArray,
+    InvalidLength(usize, usize),
+    RestrictedValue(String),
+    ClientError(String),
 }
 
 impl std::fmt::Display for OpenApiError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "OpenApiError has occurred.")
+        match self {
+            OpenApiError::InvalidLength(len, max) => {
+                write!(f, "Length of {} exceeds maximum of {}", len, max)
+            }
+            OpenApiError::ClientError(val) => {
+                write!(f, "ClientError: {}", val)
+            }
+
+            _ => write!(f, "OpenApiError has occurred."),
+        }
     }
 }
 

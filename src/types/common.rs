@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 /// For the other custom types used in the library, it is implemented to return the id field of the
 /// object as a string.
 ///
-/// **Identifiable may also be used for cases where a String or &str may be accepted. This will likely change to a better design pattern**
 pub trait Identifiable {
     /// Returns a string representing the identifier of the object.
     fn get_identifier(&self) -> String;
@@ -87,6 +86,7 @@ pub struct ToolFunction {
 
 #[derive(Serialize, Clone, Deserialize, Debug)]
 pub struct ToolCalls {
+    index: Option<u32>,
     id: String,
     r#type: String,
     function: ToolCallsFunction,

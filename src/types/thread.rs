@@ -1,7 +1,7 @@
 use crate::networking::Networking;
-use crate::types::chat::MessageList; // TODO FIXME - MessageList needs to be changed to use ApiList
-use crate::types::common::Identifiable;
+use crate::types::common::{ApiList, Identifiable};
 use crate::types::error::OpenApiError;
+use crate::types::message::GeneralMessage;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -15,41 +15,37 @@ pub struct Thread {
 
 impl Identifiable for Thread {
     fn get_identifier(&self) -> String {
-        self.id.clone().to_string()
+        self.id.clone()
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+impl<'a> Identifiable for &'a Thread {
+    fn get_identifier(&self) -> String {
+        self.id.clone()
+    }
+}
+
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct ThreadBuilder {
-    #[serde(skip)]
-    networking: Networking,
-    messages: Option<MessageList>,
+    messages: Option<Vec<GeneralMessage>>,
     metadata: Option<HashMap<String, String>>,
 }
 
 impl ThreadBuilder {
-    pub fn new_empty(networking: Networking) -> Self {
-        Self {
-            networking,
-            messages: None,
-            metadata: None,
-        }
+    pub fn new() -> Self {
+        ThreadBuilder::default()
     }
 
-    pub fn new(
-        networking: Networking,
-        messages: Option<MessageList>,
-        metadata: Option<HashMap<String, String>>,
-    ) -> Self {
-        Self {
-            networking,
-            messages,
-            metadata,
-        }
-    }
-
-    pub fn with_messages(mut self, messages: MessageList) -> Self {
+    pub fn with_messages(mut self, messages: Vec<GeneralMessage>) -> Self {
         self.messages = Some(messages);
+        self
+    }
+
+    pub fn add_message(mut self, message: GeneralMessage) -> Self {
+        match &mut self.messages {
+            Some(messages) => messages.push(message),
+            None => self.messages = Some(vec![message]),
+        }
         self
     }
 
@@ -58,7 +54,7 @@ impl ThreadBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Thread, OpenApiError> {
-        self.networking.create_thread(self.clone())
+    pub fn build(&self, networking: &Networking) -> Result<Thread, OpenApiError> {
+        networking.create_thread(self)
     }
 }

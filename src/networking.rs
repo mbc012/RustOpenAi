@@ -1,12 +1,11 @@
 use std::collections::HashMap;
+use std::fmt::format;
 use std::hash::Hash;
 use std::string::ToString;
 
 use serde_json::{Map, Value};
 
-use crate::types::assistant::{
-    Assistant, AssistantBuilder, AssistantFile, AssistantFileBuilder, ListAssistantParams,
-};
+use crate::types::assistant::{Assistant, AssistantBuilder, AssistantFile, AssistantFileBuilder};
 use crate::types::chat::{ChatBuilder, ChatCompletion};
 use crate::types::common::{ApiList, DeletionStatus};
 use crate::types::error::OpenApiError;
@@ -14,7 +13,7 @@ use crate::types::file::{File, FileBuilder};
 use crate::types::message::{Message, MessageBuilder, MessageFile};
 use crate::types::model::Model;
 use crate::types::moderation::Moderation;
-use crate::types::run::{Run, RunBuilder};
+use crate::types::run::{Run, RunBuilder, RunStep};
 use crate::types::thread::{Thread, ThreadBuilder};
 
 use reqwest::blocking::multipart;
@@ -90,9 +89,9 @@ impl Networking {
         body: Option<Value>,
         multipart_form: Option<multipart::Form>,
     ) -> Result<T, OpenApiError> {
-        self.send_request(method, endpoint, body, multipart_form)
+        self.send_request(method, endpoint.clone(), body, multipart_form)
             .and_then(|val| {
-                println!("{}", serde_json::to_string(&val)?);
+                println!("[{0}] - {1}", endpoint, serde_json::to_string(&val)?);
                 Ok(val)
             })
             .and_then(|val| serde_json::from_value::<T>(val).map_err(OpenApiError::from))
@@ -183,10 +182,11 @@ impl Networking {
     pub fn create_assistant_file(
         &self,
         payload: &AssistantFileBuilder,
+        assistant_id: &String,
     ) -> Result<AssistantFile, OpenApiError> {
         self.send_and_convert(
             Method::POST,
-            format!("assistants/{}/files", payload.get_assistant_id()),
+            format!("assistants/{}/files", assistant_id),
             Some(serde_json::to_value(payload)?),
             None,
         )
@@ -194,7 +194,7 @@ impl Networking {
 
     pub fn list_assistants(
         &self,
-        params: Option<&ListAssistantParams>,
+        params: Option<&String>,
     ) -> Result<ApiList<Assistant>, OpenApiError> {
         // Add param support
         self.send_and_convert(Method::GET, String::from("assistants"), None, None)
@@ -271,7 +271,7 @@ impl Networking {
 
     /** ---- Threads ---- */
 
-    pub fn create_thread(&self, payload: ThreadBuilder) -> Result<Thread, OpenApiError> {
+    pub fn create_thread(&self, payload: &ThreadBuilder) -> Result<Thread, OpenApiError> {
         self.send_and_convert(
             Method::POST,
             String::from("threads"),
@@ -313,10 +313,14 @@ impl Networking {
 
     /** ---- Messages ---- */
 
-    pub fn create_message(&self, payload: &MessageBuilder) -> Result<Message, OpenApiError> {
+    pub fn create_message(
+        &self,
+        payload: &MessageBuilder,
+        thread_id: &String,
+    ) -> Result<Message, OpenApiError> {
         self.send_and_convert(
             Method::POST,
-            format!("threads/{}/messages", payload.get_thread_id()),
+            format!("threads/{}/messages", thread_id),
             Some(serde_json::to_value(payload)?),
             None,
         )
@@ -331,7 +335,18 @@ impl Networking {
         )
     }
 
-    // TODO: List message files
+    pub fn list_message_files(
+        &self,
+        thread_id: String,
+        message_id: String,
+    ) -> Result<ApiList<MessageFile>, OpenApiError> {
+        self.send_and_convert(
+            Method::GET,
+            format!("threads/{0}/messages/{1}/files", thread_id, message_id),
+            None,
+            None,
+        )
+    }
 
     pub fn retrieve_message(
         &self,
@@ -379,10 +394,18 @@ impl Networking {
 
     /** ---- Runs ---- */
 
-    pub fn create_run(&self, payload: &RunBuilder) -> Result<Run, OpenApiError> {
+    pub fn create_run<S: Serialize>(
+        &self,
+        payload: &S,
+        thread_id: &Option<String>,
+    ) -> Result<Run, OpenApiError> {
+        let endpoint: String = match thread_id {
+            Some(tid) => format!("threads/{}/runs", tid),
+            None => String::from("threads/runs"),
+        };
         self.send_and_convert(
             Method::POST,
-            format!("threads/{}/runs", payload.get_thread_id()),
+            endpoint,
             Some(serde_json::to_value(payload)?),
             None,
         )
@@ -392,6 +415,42 @@ impl Networking {
         self.send_and_convert(
             Method::GET,
             format!("threads/{0}/runs/{1}", thread_id, run_id),
+            None,
+            None,
+        )
+    }
+
+    pub fn retrieve_run_step(
+        &self,
+        thread_id: String,
+        run_id: String,
+        step_id: String,
+    ) -> Result<RunStep, OpenApiError> {
+        self.send_and_convert(
+            Method::GET,
+            format!("threads/{0}/runs/{1}/steps/{2}", thread_id, run_id, step_id),
+            None,
+            None,
+        )
+    }
+
+    pub fn list_runs(&self, thread_id: String) -> Result<ApiList<Run>, OpenApiError> {
+        self.send_and_convert(
+            Method::GET,
+            format!("threads/{0}/runs", thread_id),
+            None,
+            None,
+        )
+    }
+
+    pub fn list_run_steps(
+        &self,
+        thread_id: String,
+        run_id: String,
+    ) -> Result<ApiList<RunStep>, OpenApiError> {
+        self.send_and_convert(
+            Method::GET,
+            format!("threads/{0}/runs/{1}/steps", thread_id, run_id),
             None,
             None,
         )

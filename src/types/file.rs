@@ -42,11 +42,6 @@ impl FileBuilder {
     }
 
     pub fn build(&self, networking: &Networking) -> Result<File, OpenApiError> {
-        if (self.file == None) && (self.purpose == None) {
-            return Err(OpenApiError::new(
-                "File and purpose must be set".to_string(),
-            ));
-        }
         networking.upload_file(self)
     }
 
