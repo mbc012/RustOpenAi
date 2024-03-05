@@ -2,6 +2,7 @@ use crate::networking::Networking;
 use crate::types::common::{Identifiable, ToolCalls, Tools, Usage};
 use crate::types::error::OpenApiError;
 
+use crate::impl_ref;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::Hash;
@@ -49,6 +50,7 @@ impl Identifiable for Run {
         self.id.clone().to_string()
     }
 }
+impl_ref!(Run, Identifiable);
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct RunBuilder {

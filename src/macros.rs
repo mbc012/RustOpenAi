@@ -13,6 +13,7 @@ macro_rules! impl_ref {
     };
 }
 
+/// Removes the first and last character from a string, useful for serializing enums with serde_json::to_string
 #[macro_export]
 macro_rules! strip_edges {
     ($s:expr) => {{
@@ -25,7 +26,7 @@ macro_rules! strip_edges {
     }};
 }
 
-// TODO: Check working
+/// Quick macro to pretty print a struct that impls serde Serialize
 #[macro_export]
 macro_rules! see_json {
     ($x:expr) => {

@@ -1,3 +1,4 @@
+use crate::impl_ref;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::Hash;
@@ -25,12 +26,7 @@ impl Identifiable for Message {
         self.id.clone()
     }
 }
-
-impl<'a> Identifiable for &'a Message {
-    fn get_identifier(&self) -> String {
-        self.id.clone()
-    }
-}
+impl_ref!(Message, Identifiable);
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MessageBuilder {

@@ -1,14 +1,21 @@
+use crate::impl_ref;
 use serde::{Deserialize, Serialize};
 
-/// Identifiable is a trait used to get the identifier of an object.
+/// `Identifiable` is a trait that provides a method for retrieving the identifier field of an object.
 ///
-/// This is implemented for ease of use of the library, it is implemented into the String and &str
-/// types. Where it will return the string itself, this allows for the user to use either String,
-/// &str, or any other type that implements the Identifiable trait as the identifier for the object.
-/// Reducing the need to convert between types.
+/// This trait is designed to simplify the usage of the library by allowing the user to use either `String`,
+/// `&String`, `&str`, or any other type that implements the `Identifiable` trait as the identifier for the object.
+/// This reduces the need for type conversions.
 ///
-/// For the other custom types used in the library, it is implemented to return the id field of the
-/// object as a string.
+/// For custom types used in the library, `Identifiable` is implemented to return the `id` field of the
+/// object as a string (for both owned and reference values). This allows for easy access to the identifier of custom objects.
+///
+/// # Methods
+///
+/// `get_identifier(&self) -> String`
+///
+/// Returns a string representing the identifier of the object. For `String`, `&String` and `&str`, it returns the string itself.
+/// For other types, it returns the `id` field of the object as a string.
 ///
 pub trait Identifiable {
     /// Returns a string representing the identifier of the object.
@@ -20,6 +27,7 @@ impl Identifiable for String {
         self.clone()
     }
 }
+impl_ref!(String, Identifiable);
 
 impl Identifiable for &str {
     fn get_identifier(&self) -> String {
@@ -33,7 +41,7 @@ impl Identifiable for &str {
 /// being optional.
 ///
 /// See examples:
-/// [Optional Format](https://platform.openai.com/docs/api-reference/assistants/listAssistantFiles)
+/// [Optional Format](https://platform.openai.com/docs/api-reference/assistants/listAssistantFiles),
 /// [Full Format](https://platform.openai.com/docs/api-reference/models/list)
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ApiList<T> {

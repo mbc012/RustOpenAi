@@ -14,27 +14,21 @@ use crate::types::moderation::Moderation;
 use crate::types::run::{Run, RunStep};
 use crate::types::thread::Thread;
 
-/// Client for interacting with OpenAI's API.
+// doc sections: arguments, examples, panics, safety, errors
+
+/// # Client for interacting with OpenAI's API.
 ///
-/// # Arguments
+/// ## Arguments
 /// - `networking`: A `Networking` struct that handles all networking with the API using the reqwest crate
 ///
-/// # Examples
+/// ## Examples
 /// ```
 /// todo!()
 /// ```
 ///
-///
-/// # Panics
-/// N/a
-///
-///
-/// # Safety
-/// N/a
-///
-///
 /// # Errors
-/// May return an `OpenApiError` error type.
+/// May return an `OpenApiError` error type on fallible methods. This can be determined by methods
+/// with a return type of `Result`.
 ///
 pub struct OpenAIClient {
     networking: Networking,
@@ -94,11 +88,13 @@ impl OpenAIClient {
     }
 
     /* MODELS */
+    /// Load a model using the model_id.
     pub fn load_model<T: Identifiable>(&self, model: T) -> Result<Model, OpenApiError> {
         let model_id: String = model.get_identifier();
         self.networking.load_model(model_id)
     }
 
+    /// List all current models
     pub fn list_models(&self) -> Result<ApiList<Model>, OpenApiError> {
         self.networking.list_models()
     }

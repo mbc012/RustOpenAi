@@ -1,3 +1,4 @@
+use crate::impl_ref;
 use serde::{Deserialize, Serialize};
 use serde_urlencoded;
 use std::collections::HashMap;
@@ -6,8 +7,30 @@ use crate::networking::Networking;
 use crate::types::common::{Identifiable, Tools};
 use crate::types::error::OpenApiError;
 
-/** ---- Assistant ---- */
-
+/// `Assistant` is a struct that represents an OpenAI assistant object. It represents an entity
+/// that can be configured to respond to users’ Messages using several parameters like:
+/// - Instructions: how the Assistant and model should behave or respond
+/// - Model: you can specify any GPT-3.5 or GPT-4 models. The Retrieval tool requires at least gpt-3.5-turbo-1106 (newer versions are supported) or gpt-4-turbo-preview models.
+/// - Tools: the API supports Code Interpreter and Retrieval that are built and hosted by OpenAI.
+/// - Functions: the API allows you to define custom function signatures, with similar behavior the function calling feature.
+///
+/// # Fields
+///
+/// * `id: String` - The unique identifier of the assistant.
+/// * `object: String` - The type of the object.
+/// * `created_at: u64` - The timestamp of when the assistant was created.
+/// * `name: Option<String>` - The name of the assistant, if provided.
+/// * `description: Option<String>` - The description of the assistant, if provided.
+/// * `model: String` - The model identifier that the assistant is based on.
+/// * `instructions: Option<String>` - Instructions for the assistant, if provided.
+/// * `tools: Vec<Tools>` - A list of tools associated with the assistant.
+/// * `file_ids: Vec<String>` - A list of file identifiers associated with the assistant.
+/// * `metadata: HashMap<String, String>` - A map of metadata associated with the assistant.
+///
+/// # Implements
+///
+/// `Identifiable` trait for both owned and reference values
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Assistant {
     id: String,
@@ -27,15 +50,17 @@ impl Identifiable for Assistant {
         self.id.clone()
     }
 }
+impl_ref!(Assistant, Identifiable);
 
-impl<'a> Identifiable for &'a Assistant {
-    fn get_identifier(&self) -> String {
-        self.id.clone()
-    }
-}
-
-/** ---- Assistant File ---- */
-
+/// `AssistantFile` is a struct that represents a file associated with an OpenAI assistant object.
+///
+/// # Fields
+///
+/// * `id: String` - The unique identifier of the assistant file.
+/// * `object: String` - The type of the object.
+/// * `created_at: u64` - The timestamp of when the assistant file was created.
+/// * `assistant_id: String` - The identifier of the assistant that this file is associated with.
+///
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AssistantFile {
     id: String,
@@ -44,9 +69,18 @@ pub struct AssistantFile {
     assistant_id: String,
 }
 
-/** ---- BUILDERS ---- */
-/** ---- Assistant Builder ---- */
-
+/// `AssistantBuilder` is a struct that provides a builder pattern for creating an `Assistant`.
+///
+/// # Fields
+///
+/// * `model: String` - The model identifier that the assistant is based on.
+/// * `name: Option<String>` - The name of the assistant, if provided.
+/// * `description: Option<String>` - The description of the assistant, if provided.
+/// * `instructions: Option<String>` - Instructions for the assistant, if provided.
+/// * `tools: Option<Vec<Tools>>` - A list of tools associated with the assistant.
+/// * `file_ids: Option<Vec<String>>` - A list of file identifiers associated with the assistant.
+/// * `metadata: Option<HashMap<String, String>>` - A map of metadata associated with the assistant.
+///
 #[derive(Default, Debug, Serialize)]
 pub struct AssistantBuilder {
     model: String,
@@ -164,8 +198,13 @@ impl AssistantBuilder {
     }
 }
 
-/** ---- Assistant File Builder ---- */
-
+/// `AssistantFileBuilder` is a struct that provides a builder pattern for creating an `AssistantFile`.
+///
+/// # Fields
+///
+/// * `assistant_id: String` - The identifier of the assistant that this file is associated with.
+/// * `file_id: String` - The unique identifier of the assistant file.
+///
 #[derive(Debug, Serialize)]
 pub struct AssistantFileBuilder {
     #[serde(skip_serializing)]

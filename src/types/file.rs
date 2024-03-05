@@ -22,11 +22,6 @@ impl Identifiable for File {
     }
 }
 impl_ref!(File, Identifiable);
-// impl<'a> Identifiable for &'a File {
-//     fn get_identifier(&self) -> String {
-//         self.id.clone()
-//     }
-// }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FileBuilder {

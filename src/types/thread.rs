@@ -1,3 +1,4 @@
+use crate::impl_ref;
 use crate::networking::Networking;
 use crate::types::common::{ApiList, Identifiable};
 use crate::types::error::OpenApiError;
@@ -18,12 +19,7 @@ impl Identifiable for Thread {
         self.id.clone()
     }
 }
-
-impl<'a> Identifiable for &'a Thread {
-    fn get_identifier(&self) -> String {
-        self.id.clone()
-    }
-}
+impl_ref!(Thread, Identifiable);
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct ThreadBuilder {
