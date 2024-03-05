@@ -1,3 +1,4 @@
+use crate::impl_ref;
 use crate::networking::Networking;
 use serde::{Deserialize, Serialize};
 
@@ -16,3 +17,4 @@ impl Identifiable for Model {
         self.id.clone()
     }
 }
+impl_ref!(Model, Identifiable);

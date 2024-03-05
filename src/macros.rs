@@ -1,5 +1,18 @@
 use serde_json;
 
+/// Simplifies the implementation of a trait for a type in the case where the reference
+/// implementation is the same as the owned implementation.
+#[macro_export]
+macro_rules! impl_ref {
+    ($type:ty, $trait:ident) => {
+        impl<'a> $trait for &'a $type {
+            fn get_identifier(&self) -> String {
+                (*self).get_identifier()
+            }
+        }
+    };
+}
+
 #[macro_export]
 macro_rules! strip_edges {
     ($s:expr) => {{

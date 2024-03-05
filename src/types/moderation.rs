@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Moderation {
     id: String,
     model: String,
@@ -13,7 +13,15 @@ impl Moderation {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum ModerationType {
+    #[serde(rename = "text-moderation-latest")]
+    Latest,
+    #[serde(rename = "text-moderation-stable")]
+    Stable,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ModerationRecord {
     flagged: bool,
     categories: ModerationCategories,
@@ -26,11 +34,12 @@ impl ModerationRecord {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ModerationCategories {
     sexual: bool,
     hate: bool,
     harassment: bool,
+    #[serde(rename = "self-harm")]
     self_harm: bool,
     #[serde(rename = "sexual/minors")]
     sexual_minors: bool,
@@ -47,11 +56,12 @@ pub struct ModerationCategories {
     violence: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ModerationScores {
     sexual: f64,
     hate: f64,
     harassment: f64,
+    #[serde(rename = "self-harm")]
     self_harm: f64,
     #[serde(rename = "sexual/minors")]
     sexual_minors: f64,

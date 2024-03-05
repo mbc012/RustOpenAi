@@ -1,14 +1,17 @@
+use crate::moderation::{ModerationCategories, ModerationType};
 use std::collections::HashMap;
 use std::env;
 
 use crate::networking::Networking;
+use crate::strip_edges;
 use crate::types::assistant::{Assistant, AssistantFile};
 use crate::types::common::{ApiList, DeletionStatus, Identifiable};
 use crate::types::error::OpenApiError;
+use crate::types::file::File;
 use crate::types::message::{Message, MessageFile};
 use crate::types::model::Model;
 use crate::types::moderation::Moderation;
-use crate::types::run::Run;
+use crate::types::run::{Run, RunStep};
 use crate::types::thread::Thread;
 
 /// Client for interacting with OpenAI's API.
@@ -100,18 +103,39 @@ impl OpenAIClient {
         self.networking.list_models()
     }
 
+    /* FILES */
+    pub fn list_files(&self) -> Result<ApiList<File>, OpenApiError> {
+        self.networking.list_files()
+    }
+
+    pub fn retrieve_file<T: Identifiable>(&self, file: T) -> Result<File, OpenApiError> {
+        let file_id: String = file.get_identifier();
+        self.networking.retrieve_file(file_id)
+    }
+
+    pub fn delete_file<T: Identifiable>(&self, file: T) -> Result<DeletionStatus, OpenApiError> {
+        let file_id: String = file.get_identifier();
+        self.networking.delete_file(file_id)
+    }
+
+    pub fn retrieve_file_content<T: Identifiable>(&self, file: T) -> Result<String, OpenApiError> {
+        let file_id: String = file.get_identifier();
+        self.networking.retrieve_file_content(file_id)
+    }
+
     /* MODERATION */
-    pub fn create_moderation<T: Identifiable>(
+    pub fn create_moderation<T: Into<String>>(
         &self,
-        text: String,
-        model: Option<T>,
+        text: T,
+        moderation_model: ModerationType,
     ) -> Result<Moderation, OpenApiError> {
+        let text = text.into();
+        let moderation_model = strip_edges!(serde_json::to_string(&moderation_model)?);
+
         let mut payload = HashMap::new();
         payload.insert(String::from("input"), text);
-        let model_id: Option<String> = model.map(|m| m.get_identifier());
-        if let Some(v) = model_id {
-            payload.insert(String::from("model"), v.into());
-        }
+        payload.insert(String::from("model"), moderation_model);
+
         self.networking.create_moderation(payload)
     }
 
@@ -231,6 +255,29 @@ impl OpenAIClient {
         let thread_id: String = thread.get_identifier();
         let run_id: String = run.get_identifier();
         self.networking.retrieve_run(thread_id, run_id)
+    }
+
+    pub fn retrieve_run_step<T: Identifiable, R: Identifiable, S: Identifiable>(
+        &self,
+        thread_id: T,
+        run_id: R,
+        step_id: S,
+    ) -> Result<RunStep, OpenApiError> {
+        let thread_id: String = thread_id.get_identifier();
+        let run_id: String = run_id.get_identifier();
+        let step_id: String = step_id.get_identifier();
+        self.networking
+            .retrieve_run_step(thread_id, run_id, step_id)
+    }
+
+    pub fn cancel_run<T: Identifiable, R: Identifiable>(
+        &self,
+        thread_id: T,
+        run_id: R,
+    ) -> Result<Run, OpenApiError> {
+        let thread_id: String = thread_id.get_identifier();
+        let run_id: String = run_id.get_identifier();
+        self.networking.cancel_run(thread_id, run_id)
     }
 }
 

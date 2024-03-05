@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 use std::fmt::format;
 use std::hash::Hash;
+use std::path::PathBuf;
 use std::string::ToString;
 
 use serde_json::{Map, Value};
 
 use crate::types::assistant::{Assistant, AssistantBuilder, AssistantFile, AssistantFileBuilder};
 use crate::types::chat::{ChatBuilder, ChatCompletion};
-use crate::types::common::{ApiList, DeletionStatus};
+use crate::types::common::{ApiList, DeletionStatus, Identifiable};
 use crate::types::error::OpenApiError;
 use crate::types::file::{File, FileBuilder};
 use crate::types::message::{Message, MessageBuilder, MessageFile};
@@ -16,6 +17,8 @@ use crate::types::moderation::Moderation;
 use crate::types::run::{Run, RunBuilder, RunStep};
 use crate::types::thread::{Thread, ThreadBuilder};
 
+use crate::file::FileTypes;
+use crate::strip_edges;
 use reqwest::blocking::multipart;
 use reqwest::{blocking::Client, header::HeaderMap, Method, Url};
 use serde::de::DeserializeOwned;
@@ -113,15 +116,15 @@ impl Networking {
 
     /** ---- File ---- */
 
-    pub fn upload_file(&self, payload: &FileBuilder) -> Result<File, OpenApiError> {
+    pub fn upload_file(&self, file: PathBuf, purpose: FileTypes) -> Result<File, OpenApiError> {
         let form = multipart::Form::new()
-            .text("purpose", payload.purpose_str())
-            .file("file", payload.get_path_buff().as_path())?;
+            .text("purpose", strip_edges!(serde_json::to_string(&purpose)?))
+            .file("file", file.as_path())?;
 
         self.send_and_convert(Method::POST, String::from("files"), None, Some(form))
     }
 
-    pub fn list_files(&self) -> Result<Vec<File>, OpenApiError> {
+    pub fn list_files(&self) -> Result<ApiList<File>, OpenApiError> {
         self.send_and_convert(Method::GET, String::from("files"), None, None)
     }
 
@@ -133,7 +136,8 @@ impl Networking {
         self.send_and_convert(Method::DELETE, format!("files/{}", file_id), None, None)
     }
 
-    pub fn retrieve_file_content(&self, file_id: String) -> Result<File, OpenApiError> {
+    //TODO Check the return type correct
+    pub fn retrieve_file_content(&self, file_id: String) -> Result<String, OpenApiError> {
         self.send_and_convert(
             Method::GET,
             format!("files/{}/content", file_id),
@@ -162,7 +166,7 @@ impl Networking {
     ) -> Result<Moderation, OpenApiError> {
         self.send_and_convert(
             Method::POST,
-            String::from("content/moderation"),
+            String::from("moderations"),
             Some(serde_json::to_value(payload)?),
             None,
         )
@@ -451,6 +455,15 @@ impl Networking {
         self.send_and_convert(
             Method::GET,
             format!("threads/{0}/runs/{1}/steps", thread_id, run_id),
+            None,
+            None,
+        )
+    }
+
+    pub fn cancel_run(&self, thread_id: String, run_id: String) -> Result<Run, OpenApiError> {
+        self.send_and_convert(
+            Method::POST,
+            format!("threads/{0}/runs/{1}/cancel", thread_id, run_id),
             None,
             None,
         )

@@ -2,7 +2,7 @@ use crate::networking::Networking;
 use crate::types::common::Identifiable;
 use crate::types::error::OpenApiError;
 
-use crate::strip_edges;
+use crate::{impl_ref, strip_edges};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -18,44 +18,34 @@ pub struct File {
 
 impl Identifiable for File {
     fn get_identifier(&self) -> String {
-        self.id.clone().to_string()
+        self.id.clone()
     }
 }
+impl_ref!(File, Identifiable);
+// impl<'a> Identifiable for &'a File {
+//     fn get_identifier(&self) -> String {
+//         self.id.clone()
+//     }
+// }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FileBuilder {
     file: PathBuf,
-    purpose: Option<FileTypes>,
+    purpose: FileTypes,
 }
 
 impl FileBuilder {
-    pub fn new(file: PathBuf) -> Self {
-        Self {
-            file,
-            purpose: None,
-        }
+    pub fn new<P: Into<PathBuf>>(file: P, purpose: FileTypes) -> Self {
+        let file = file.into();
+        Self { file, purpose }
     }
-
-    pub fn with_purpose(mut self, purpose: FileTypes) -> Self {
-        self.purpose = Some(purpose);
-        self
-    }
-
-    pub fn build(&self, networking: &Networking) -> Result<File, OpenApiError> {
-        networking.upload_file(self)
-    }
-
-    pub fn purpose_str(&self) -> String {
-        strip_edges!(serde_json::to_string(&self.purpose).unwrap()).to_string()
-    }
-
-    pub fn get_path_buff(&self) -> PathBuf {
-        self.file.clone()
+    pub fn build(self, networking: &Networking) -> Result<File, OpenApiError> {
+        networking.upload_file(self.file, self.purpose)
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "kebab-case")]
 pub enum FileTypes {
     FineTune,
     Assistants,
