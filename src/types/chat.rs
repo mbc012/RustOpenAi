@@ -7,11 +7,11 @@ use std::str::FromStr;
 use crate::networking::Networking;
 use crate::types::common::{Identifiable, ToolCalls, Tools, Usage};
 use crate::types::error::OpenApiError;
-use crate::types::message::{CompletionMessages, GeneralMessage};
+use crate::types::message::{CompletionMessage, GeneralMessage};
 
 #[derive(Default, Serialize, Clone, Deserialize, Debug)]
-pub struct ChatBuilder {
-    messages: Vec<CompletionMessages>,
+pub struct ChatCompletionBuilder {
+    messages: Vec<CompletionMessage>,
     model: String,
 
     frequency_penalty: Option<f64>,
@@ -27,17 +27,18 @@ pub struct ChatBuilder {
     stream: Option<bool>,
     temperature: Option<f64>,
     top_p: Option<f64>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     tools: Vec<Tools>,
     //tool_choice // TODO: Implement tool_choice
     user: Option<String>,
 }
 
-impl ChatBuilder {
-    pub fn new<T: Identifiable>(model: T, messages: Vec<CompletionMessages>) -> Self {
-        ChatBuilder {
+impl ChatCompletionBuilder {
+    pub fn new<T: Identifiable>(model: T, messages: Vec<CompletionMessage>) -> Self {
+        ChatCompletionBuilder {
             model: model.get_identifier(),
             messages,
-            ..ChatBuilder::default()
+            ..ChatCompletionBuilder::default()
         }
     }
 
@@ -192,7 +193,7 @@ impl ChatBuilder {
     }
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct ChatCompletion {
     id: String,
     choices: Vec<Choice>,
@@ -203,7 +204,17 @@ pub struct ChatCompletion {
     usage: Usage,
 }
 
-#[derive(Clone, Deserialize, Debug)]
+impl ChatCompletion {
+    pub fn get_choices(&self) -> Vec<Choice> {
+        self.choices.clone()
+    }
+
+    pub fn get_message_content(&self) -> Option<String> {
+        self.choices.first()?.get_message()?.get_content().clone()
+    }
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct ChatCompletionChunk {
     id: String,
     choices: Vec<Choice>,
@@ -213,8 +224,8 @@ pub struct ChatCompletionChunk {
     object: String,
 }
 
-#[derive(Clone, Deserialize, Debug)]
-struct Choice {
+#[derive(Clone, Deserialize, Serialize, Debug)]
+pub struct Choice {
     finish_reason: Option<String>,
     index: u32,
     logprobs: Option<LogProbChoice>,
@@ -222,19 +233,25 @@ struct Choice {
     delta: Option<Delta>,
 }
 
-#[derive(Clone, Deserialize, Debug)]
+impl Choice {
+    pub fn get_message(&self) -> Option<GeneralMessage> {
+        self.message.clone()
+    }
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
 struct Delta {
     content: Option<String>,
     tool_calls: Vec<ToolCalls>,
     role: String,
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Deserialize, Serialize, Debug)]
 struct LogProbChoice {
     content: LogProb,
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Deserialize, Serialize, Debug)]
 struct LogProb {
     token: String,
     logprob: f64,

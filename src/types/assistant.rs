@@ -213,7 +213,7 @@ pub struct AssistantFileBuilder {
 }
 
 impl AssistantFileBuilder {
-    pub fn new<T: Identifiable>(assistant_id: T, file_id: T) -> Self {
+    pub fn new<A: Identifiable, F: Identifiable>(assistant_id: A, file_id: F) -> Self {
         Self {
             assistant_id: assistant_id.get_identifier(),
             file_id: file_id.get_identifier(),

@@ -1,6 +1,28 @@
 use std::fmt::{write, Formatter};
 
 #[derive(Debug)]
+struct OperationError {
+    created: u64,
+    origin: String,
+    reason: String,
+    thread_id: String,
+}
+
+impl OperationError {
+    pub fn new(origin: String, reason: String) -> Self {
+        Self {
+            origin: origin.to_string(),
+            reason: reason.to_string(),
+            created: std::time::SystemTime::now()
+                .duration_since(std::time::SystemTime::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs(),
+            thread_id: format!("{:?}", std::thread::current().id()),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum OpenApiError {
     ReqwestError(reqwest::Error),
     StdIoError(std::io::Error),
@@ -12,6 +34,13 @@ pub enum OpenApiError {
     InvalidLength(usize, usize),
     RestrictedValue(String),
     ClientError(String),
+    OperationError(OperationError), //
+}
+
+impl OpenApiError {
+    pub fn new_operation_err<O: Into<String>, R: Into<String>>(origin: O, reason: R) -> Self {
+        OpenApiError::OperationError(OperationError::new(origin.into(), reason.into()))
+    }
 }
 
 impl std::fmt::Display for OpenApiError {

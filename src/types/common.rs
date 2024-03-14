@@ -75,6 +75,22 @@ pub struct Tools {
     function: Option<ToolFunction>,
 }
 
+impl Tools {
+    pub fn code_interpreter() -> Self {
+        Self {
+            r#type: ToolTypes::CodeInterpreter,
+            function: None,
+        }
+    }
+
+    pub fn retrieval() -> Self {
+        Self {
+            r#type: ToolTypes::Retrieval,
+            function: None,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum ToolTypes {

@@ -7,7 +7,7 @@ use std::string::ToString;
 use serde_json::{Map, Value};
 
 use crate::types::assistant::{Assistant, AssistantBuilder, AssistantFile, AssistantFileBuilder};
-use crate::types::chat::{ChatBuilder, ChatCompletion};
+use crate::types::chat::{ChatCompletion, ChatCompletionBuilder};
 use crate::types::common::{ApiList, DeletionStatus, Identifiable};
 use crate::types::error::OpenApiError;
 use crate::types::file::{File, FileBuilder};
@@ -104,7 +104,7 @@ impl Networking {
 
     pub fn create_chat_completion(
         &self,
-        payload: &ChatBuilder,
+        payload: &ChatCompletionBuilder,
     ) -> Result<ChatCompletion, OpenApiError> {
         self.send_and_convert(
             Method::POST,

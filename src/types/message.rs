@@ -7,7 +7,7 @@ use crate::networking::Networking;
 use crate::types::common::{Identifiable, ToolCalls};
 use crate::types::error::OpenApiError;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
     id: String,
     object: String,
@@ -39,20 +39,40 @@ pub struct MessageBuilder {
     metadata: Option<HashMap<String, String>>,
 }
 impl MessageBuilder {
-    pub fn new<I: Identifiable>(
+    ///
+    /// The constructor **and entry point** for the `MessageBuilder` object.
+    ///
+    /// # Arguments
+    ///
+    /// * `thread_id` - An object implementing the `Identifiable` trait. This is used to identify the thread to which the message belongs.
+    /// * `content` - A `String` representing the content of the message.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<Self, OpenApiError>` - Returns an instance of `MessageBuilder` if successful, or an `OpenApiError` if an error occurs.
+    ///
+    /// # IMPORTANT NOTE
+    ///
+    /// The `MessageRole` must be of variant `User`, thus no parameter for this, however this may change in future!
+    ///
+    // REMOVED
+    // /// * `role` - A `MessageRole` enum indicating the role of the message. This can be `System`, `User`, or `Assistant`.
+    pub fn new<I: Identifiable, C: Into<String>>(
         thread_id: I,
-        role: MessageRole,
-        content: String,
+        //role: MessageRole,
+        content: C,
     ) -> Result<Self, OpenApiError> {
         let thread_id = thread_id.get_identifier();
-        match role {
-            MessageRole::User => {}
-            _ => {
-                return Err(OpenApiError::RestrictedValue(
-                    "MessageRole must be of type User".into(),
-                ))
-            }
-        }
+        let content = content.into();
+        let role = MessageRole::User;
+        // match role {
+        //     MessageRole::User => {}
+        //     _ => {
+        //         return Err(OpenApiError::RestrictedValue(
+        //             "MessageRole must be of type User".into(),
+        //         ))
+        //     }
+        // }
         Ok(Self {
             thread_id,
             role,
@@ -114,7 +134,7 @@ impl From<&str> for MessageRole {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
 #[serde(untagged)]
 pub enum MessageContent {
@@ -122,37 +142,37 @@ pub enum MessageContent {
     ImageFile(ImageContent),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct TextContent {
     r#type: String,
     text: TextValue,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct TextValue {
     value: String,
     annotations: Vec<Annotations>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct ImageContent {
     r#type: String,
     image_file: ImageLocation,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct ImageLocation {
     file_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(untagged)]
 enum Annotations {
     FileCitation(FileCitation),
     FilePath(FilePath),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct FileCitation {
     r#type: String,
     text: String,
@@ -161,13 +181,13 @@ struct FileCitation {
     end_index: u32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct FileCitationLocation {
     file_id: String,
     quote: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct FilePath {
     r#type: String,
     text: String,
@@ -176,7 +196,7 @@ struct FilePath {
     end_index: u32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct FilePathLocation {
     file_id: String,
 }
@@ -203,18 +223,24 @@ pub struct GeneralMessage {
     metadata: Option<HashMap<String, String>>,
 }
 
+impl GeneralMessage {
+    pub fn get_content(&self) -> Option<String> {
+        self.content.clone()
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(untagged)]
-pub enum CompletionMessages {
+pub enum CompletionMessage {
     SystemMessage(GeneralMessage),
     UserMessage(GeneralMessage),
     AssistantMessage(GeneralMessage),
     ToolMessage(GeneralMessage),
 }
 
-impl CompletionMessages {
-    pub fn new_system(content: String, name: Option<String>) -> CompletionMessages {
-        CompletionMessages::SystemMessage(GeneralMessage {
+impl CompletionMessage {
+    pub fn new_system(content: String, name: Option<String>) -> CompletionMessage {
+        CompletionMessage::SystemMessage(GeneralMessage {
             content: Some(content),
             role: "system".into(),
             name,
@@ -222,8 +248,8 @@ impl CompletionMessages {
         })
     }
 
-    pub fn new_user(content: String, name: Option<String>) -> CompletionMessages {
-        CompletionMessages::UserMessage(GeneralMessage {
+    pub fn new_user(content: String, name: Option<String>) -> CompletionMessage {
+        CompletionMessage::UserMessage(GeneralMessage {
             content: Some(content),
             role: "user".into(),
             name,
@@ -235,8 +261,8 @@ impl CompletionMessages {
         content: Option<String>,
         name: Option<String>,
         tool_calls: Option<Vec<ToolCalls>>,
-    ) -> CompletionMessages {
-        CompletionMessages::AssistantMessage(GeneralMessage {
+    ) -> CompletionMessage {
+        CompletionMessage::AssistantMessage(GeneralMessage {
             content,
             role: "assistant".into(),
             name,
@@ -245,8 +271,8 @@ impl CompletionMessages {
         })
     }
 
-    pub fn new_tool(content: String, tool_call_id: Option<String>) -> CompletionMessages {
-        CompletionMessages::ToolMessage(GeneralMessage {
+    pub fn new_tool(content: String, tool_call_id: Option<String>) -> CompletionMessage {
+        CompletionMessage::ToolMessage(GeneralMessage {
             content: Some(content),
             role: "tool".into(),
             tool_call_id,

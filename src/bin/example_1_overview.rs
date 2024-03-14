@@ -1,17 +1,17 @@
-use RustOpenAi::assistant::AssistantBuilder;
-use RustOpenAi::file::{FileBuilder, FileTypes};
-use RustOpenAi::message::{MessageBuilder, MessageRole};
-use RustOpenAi::moderation::ModerationType;
-use RustOpenAi::run::RunBuilder;
-use RustOpenAi::thread::ThreadBuilder;
-use RustOpenAi::OpenAIClient;
+use rust_open_ai::assistant::AssistantBuilder;
+use rust_open_ai::file::{FileBuilder, FileTypes};
+use rust_open_ai::message::{MessageBuilder, MessageRole};
+use rust_open_ai::moderation::ModerationType;
+use rust_open_ai::run::RunBuilder;
+use rust_open_ai::thread::ThreadBuilder;
+use rust_open_ai::OpenAIClient;
 
-const APIKEY: &str = "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";
+const APIKEY: &str = "sk-AAA";
 
 fn main() {
     // Client
     let organization_id = None;
-    let client = OpenAIClient::new(APIKEY.into(), organization_id).unwrap();
+    let client = OpenAIClient::new(APIKEY, organization_id).unwrap();
 
     // Model
     let list_models = client.list_models().unwrap();
@@ -49,14 +49,10 @@ fn main() {
     // Message
     let msg_thread = ThreadBuilder::new().build(client.netref()).unwrap();
     let messages = client.list_messages(&msg_thread).unwrap();
-    let new_msg = MessageBuilder::new(
-        &msg_thread,
-        MessageRole::User,
-        "Insert message here...".to_string(),
-    )
-    .unwrap()
-    .build(client.netref())
-    .unwrap();
+    let new_msg = MessageBuilder::new(&msg_thread, "Insert message here...".to_string())
+        .unwrap()
+        .build(client.netref())
+        .unwrap();
     let get_msg = client.retrieve_message(&msg_thread, &new_msg).unwrap();
     let msg_files = client.list_message_files(&msg_thread, &get_msg).unwrap();
     //let msg_file = client.retrieve_message_file(&msg_thread, &get_msg, "file_id").unwrap();

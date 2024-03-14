@@ -3,9 +3,11 @@ use crate::types::common::{Identifiable, ToolCalls, Tools, Usage};
 use crate::types::error::OpenApiError;
 
 use crate::impl_ref;
+use crate::message::Message;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::ops::Deref;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Run {
@@ -37,6 +39,20 @@ impl Run {
         networking.retrieve_run(self.thread_id.clone(), self.id.clone())
     }
 
+    pub fn retrieve_first_message(&self, networking: &Networking) -> Result<Message, OpenApiError> {
+        let messages = networking.list_messages(self.thread_id.clone()).unwrap();
+        if messages.get_data_vec().len() < 1 {
+            // TODO: Change to OperationalError when completed
+            return Err(OpenApiError::ClientError("Run contains no messages".into()));
+        }
+        let message = messages.get_data_vec().first().unwrap();
+        Ok(message.clone())
+    }
+
+    pub fn retrieve_status(&self) -> RunStatus {
+        self.status.clone()
+    }
+
     pub fn is_complete(&self) -> bool {
         match self.status {
             RunStatus::Completed => true,
@@ -65,7 +81,9 @@ pub struct RunBuilder {
 }
 
 impl RunBuilder {
-    pub fn new(thread_id: String, assistant_id: String) -> Self {
+    pub fn new<T: Identifiable, A: Identifiable>(thread_id: T, assistant_id: A) -> Self {
+        let thread_id: String = thread_id.get_identifier();
+        let assistant_id: String = assistant_id.get_identifier();
         Self {
             thread_id: Some(thread_id),
             assistant_id,
@@ -73,29 +91,36 @@ impl RunBuilder {
         }
     }
 
-    pub fn new_with_thread(assistant_id: String) -> Self {
+    pub fn new_with_thread<A: Identifiable>(assistant_id: A) -> Self {
+        let assistant_id: String = assistant_id.get_identifier();
         Self {
             assistant_id,
             ..Self::default()
         }
     }
 
-    fn with_model(mut self, model: String) -> Self {
+    pub fn with_model<M: Identifiable>(mut self, model: M) -> Self {
+        let model: String = model.get_identifier();
         self.model = Some(model);
         self
     }
 
-    fn with_instructions(mut self, instructions: String) -> Self {
+    pub fn with_instructions<I: Into<String>>(mut self, instructions: I) -> Self {
+        let instructions = instructions.into();
         self.instructions = Some(instructions);
         self
     }
 
-    fn with_additional_instructions(mut self, additional_instructions: String) -> Self {
+    pub fn with_additional_instructions<AI: Into<String>>(
+        mut self,
+        additional_instructions: AI,
+    ) -> Self {
+        let additional_instructions = additional_instructions.into();
         self.additional_instructions = Some(additional_instructions);
         self
     }
 
-    fn build(&self, networking: &Networking) -> Result<Run, OpenApiError> {
+    pub fn build(&self, networking: &Networking) -> Result<Run, OpenApiError> {
         networking.create_run(self, &self.thread_id)
     }
 }

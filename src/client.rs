@@ -56,7 +56,11 @@ impl OpenAIClient {
     }
 
     /// Generate a new OpenAIClient supplying both the Apikey and Organization ID
-    pub fn new(apikey: String, organization_id: Option<String>) -> Result<Self, OpenApiError> {
+    pub fn new<A: Into<String>>(
+        apikey: A,
+        organization_id: Option<String>,
+    ) -> Result<Self, OpenApiError> {
+        let apikey = apikey.into();
         Ok(Self {
             networking: Networking::new(apikey, organization_id.clone()),
         })
