@@ -3,6 +3,7 @@ pub mod chat;
 pub mod common;
 pub mod error;
 pub mod file;
+mod fine_tuning;
 pub mod message;
 pub mod model;
 pub mod moderation;

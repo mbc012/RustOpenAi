@@ -14,8 +14,8 @@ pub use client::OpenAIClient;
 
 mod macros;
 mod networking;
-
 mod types;
+
 pub use types::assistant;
 pub use types::chat;
 pub use types::common;

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_urlencoded;
 use std::collections::HashMap;
 
+use crate::model::Model;
 use crate::networking::Networking;
 use crate::types::common::{Identifiable, Tools};
 use crate::types::error::OpenApiError;
