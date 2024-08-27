@@ -30,29 +30,6 @@ This project is currently being built, and in a WIP status. It is currently not 
 currently incomplete and the source code is incomplete and many changes my still occur. Please check back later for
 updates, or use at your own risk.
 
-## Getting Started
-
-### Prerequisites
-
-*
-Rust ([Windows](https://www.rust-lang.org/tools/install) | [Other](https://forge.rust-lang.org/infra/other-installation-methods.html))
-
-### Installation
-
-1. Get OpenAI apikey from [here](https://platform.openai.com/api-keys) and set it up on your local machine according to
-   the instructions [here](https://platform.openai.com/docs/quickstart/step-2-setup-your-api-key).
-
-2. Clone the repo to your directory
-
-```sh
-git clone https://github.com/mbc012/RustOpenAi.git
-```
-
-3. FINISH
-
-```sh
-TODO
-```
 
 ## Coverage
 
